@@ -1,5 +1,6 @@
 const express = require('express');
 let books = require("./booksdb.js");
+const { default: axios } = require('axios');
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
@@ -20,8 +21,8 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  return res.status(200).json(books);
+public_users.get('/', function (req, res) {
+    return res.status(200).json(books);
 });
 
 // Get book details based on ISBN
@@ -34,6 +35,7 @@ public_users.get('/isbn/:isbn',function (req, res) {
     return res.status(200).json(books[req.params.isbn]);
  });
   
+
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
     const author = req.params.author;
@@ -42,9 +44,10 @@ public_users.get('/author/:author',function (req, res) {
         return res.status(404).json({message: `Please provide an author`})
     if (!theBook)
         return res.status(404).json({message: `Book with author ${author} not found`})
-    
+   
     return res.status(200).json(theBook);
 });
+
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
@@ -55,7 +58,11 @@ public_users.get('/title/:title',function (req, res) {
     if (!theBook)
         return res.status(404).json({message: `Book with title ${title} not found`})
     
-    return res.status(200).json(theBook);
+    axios.get("https://books.bytitle").then(book => {
+        return res.status(200).json(book);
+    }).catch(error => {
+        return res.status(400).json({message: error});
+    })
 });
 
 //  Get book review
